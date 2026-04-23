@@ -1,14 +1,15 @@
+// Package response - respuestas formao universal
 package response
 
 import "github.com/gofiber/fiber/v3"
 
 type Response struct {
-	Success bool        `json:"success"`
-	Res     interface{} `json:"res,omitempty"`
-	Error   string      `json:"error,omitempty"`
+	Success bool   `json:"success"`
+	Res     any    `json:"res,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
 
-func Success(c fiber.Ctx, data interface{}) error {
+func Success(c fiber.Ctx, data any) error {
 	return c.JSON(Response{
 		Success: true,
 		Res:     data,

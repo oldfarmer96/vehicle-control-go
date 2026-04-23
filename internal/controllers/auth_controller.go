@@ -1,3 +1,4 @@
+// Package controllers - logica http
 package controllers
 
 import (
@@ -72,13 +73,6 @@ func (ac *AuthController) Profile(c fiber.Ctx) error {
 }
 
 func (ac *AuthController) Logout(c fiber.Ctx) error {
-	c.Cookie(&fiber.Cookie{
-		Name:     "access_token",
-		Value:    "",
-		Expires:  time.Now().Add(-1 * time.Hour),
-		HTTPOnly: true,
-		Secure:   false,
-		SameSite: "Lax",
-	})
+	c.ClearCookie("access_token")
 	return response.Success(c, fiber.Map{"message": "Logout exitoso"})
 }
