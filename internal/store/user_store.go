@@ -1,3 +1,4 @@
+// Package store - qrys a la bd
 package store
 
 import (
@@ -32,7 +33,6 @@ func (s *UserStore) FindByUsername(ctx context.Context, username string) (*model
 		&u.ID, &u.Nombre, &u.Apellidos, &u.DNI, &u.Username, &u.Password,
 		&u.Rol, &u.Activo, &u.CreatedAt, &u.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errors.New("usuario no encontrado")
@@ -58,7 +58,6 @@ func (s *UserStore) Create(ctx context.Context, payload models.CreateUserDTO, pa
 		&u.ID, &u.Nombre, &u.Apellidos, &u.DNI, &u.Username, &u.Password,
 		&u.Rol, &u.Activo, &u.CreatedAt, &u.UpdatedAt,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +77,6 @@ func (s *UserStore) FindByID(ctx context.Context, id string) (*models.User, erro
 		&u.ID, &u.Nombre, &u.Apellidos, &u.DNI, &u.Username, &u.Password,
 		&u.Rol, &u.Activo, &u.CreatedAt, &u.UpdatedAt,
 	)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errors.New("usuario no encontrado")

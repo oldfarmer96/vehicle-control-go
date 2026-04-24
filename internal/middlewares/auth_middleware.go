@@ -6,9 +6,10 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/oldfarmer96/vehicle-control-go/internal/models"
 )
 
-func Protected() fiber.Handler {
+func Auth() fiber.Handler {
 	return func(c fiber.Ctx) error {
 		// 1. Extraer el token de la cookie
 		cookieName := os.Getenv("COOKIE_NAME")
@@ -41,14 +42,21 @@ func Protected() fiber.Handler {
 	}
 }
 
-func RequireRole(allowedRoles ...string) fiber.Handler {
+func UserRole(allowedRoles ...models.Role) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		userRole := c.Locals("userRole")
+		userRole, ok := c.Locals("userRole").(string)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "No se pudo identificar el rol del usuario",
+			})
+		}
+
 		for _, role := range allowedRoles {
-			if userRole == role {
+			if userRole == string(role) {
 				return c.Next()
 			}
 		}
+
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 			"error": "No tienes permisos suficientes",
 		})

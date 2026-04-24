@@ -9,7 +9,6 @@ import (
 func SetupAuthRoutes(router fiber.Router, authCtrl *controllers.AuthController) {
 	auth := router.Group("/auth")
 	auth.Post("/login", authCtrl.Login)
-	auth.Post("/logout", authCtrl.Logout, middlewares.Protected())
-
-	router.Get("/profile", authCtrl.Profile, middlewares.Protected())
+	auth.Post("/logout", authCtrl.Logout, middlewares.Auth())
+	router.Get("/profile", authCtrl.Profile, middlewares.Auth())
 }

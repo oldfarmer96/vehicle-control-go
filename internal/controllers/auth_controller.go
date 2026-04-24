@@ -72,7 +72,19 @@ func (ac *AuthController) Profile(c fiber.Ctx) error {
 
 func (ac *AuthController) Logout(c fiber.Ctx) error {
 	cookieName := os.Getenv("COOKIE_NAME")
-	c.ClearCookie(cookieName)
+	env := os.Getenv("APP_ENV")
+	isProd := env == "production" || env == "prod"
+
+	c.Cookie(&fiber.Cookie{
+		Name:     cookieName,
+		Value:    "",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		HTTPOnly: true,
+		Secure:   isProd,
+		SameSite: getSameSite(isProd),
+		Path:     "/",
+	})
+
 	return response.Success(c, fiber.Map{"message": "Sesión cerrada"})
 }
 
@@ -88,13 +100,13 @@ func createCookie(c fiber.Ctx, token string) error {
 	isProd := env == "production" || env == "prod"
 
 	c.Cookie(&fiber.Cookie{
-		// Name:     "access_token",
 		Name:     cookieName,
 		Value:    token,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   isProd,
 		SameSite: getSameSite(isProd),
+		Path:     "/",
 	})
 
 	return nil
