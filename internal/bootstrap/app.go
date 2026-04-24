@@ -3,9 +3,11 @@ package bootstrap
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -13,15 +15,21 @@ import (
 	"github.com/oldfarmer96/vehicle-control-go/internal/routes"
 	"github.com/oldfarmer96/vehicle-control-go/internal/services"
 	"github.com/oldfarmer96/vehicle-control-go/internal/store"
+	"github.com/oldfarmer96/vehicle-control-go/pkg/env"
 	"github.com/oldfarmer96/vehicle-control-go/pkg/response"
 )
 
-func NewApp(db *pgxpool.Pool) *fiber.App {
+func NewApp(cfg env.Config, db *pgxpool.Pool) *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName: "Vehicle Control API v1.0",
 	})
 
 	app.Use(logger.New())
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Split(cfg.CORSURLs, ","),
+		AllowCredentials: true,
+	}))
 
 	app.Get("/health", func(c fiber.Ctx) error {
 		ctx, cancel := context.WithTimeout(c.Context(), 3*time.Second)
