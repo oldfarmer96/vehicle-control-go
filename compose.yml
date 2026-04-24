@@ -1,0 +1,23 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vehicle_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000" # Puerto Host : Puerto Contenedor
+    environment:
+      - PORT=8000
+      - APP_ENV=production
+      # Lee estos valores de un archivo .env en tu VPS por seguridad
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - COOKIE_NAME=access_token
+      - CORS_URLS=https://tudominio.com,http://localhost:3000
+    # Opcional: Configurar límites de recursos para evitar que la API consuma todo el VPS
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
