@@ -68,3 +68,22 @@ func (c *UserController) ToggleActive(ctx fiber.Ctx) error {
 
 	return response.Success(ctx, user)
 }
+
+func (c *UserController) Profile(ctx fiber.Ctx) error {
+	userID, okID := ctx.Locals("userID").(string)
+
+	if !okID {
+		return response.Error(ctx, fiber.StatusUnauthorized, "Error al leer los datos de la sesión")
+	}
+
+	user, err := c.userService.GetUserByID(ctx.Context(), userID)
+	if err != nil {
+		if err.Error() == "usuario no encontrado" {
+			return response.Error(ctx, fiber.StatusNotFound, err.Error())
+		}
+		return response.Error(ctx, fiber.StatusInternalServerError, "Error interno al obtener el usuario")
+	}
+
+	return response.Success(ctx, user)
+}
+

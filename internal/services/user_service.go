@@ -1,3 +1,4 @@
+// Package services logica denecogcio
 package services
 
 import (
@@ -78,4 +79,8 @@ func (s *UserService) UpdateUser(ctx context.Context, id string, payload models.
 
 func (s *UserService) ToggleUserActive(ctx context.Context, id string) (*models.User, error) {
 	return s.userStore.ToggleActive(ctx, id)
+}
+
+func (s *UserService) GetUserByID(ctx context.Context, id string) (*models.User, error) {
+	return s.userStore.FindByID(ctx, id)
 }
