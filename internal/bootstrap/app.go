@@ -1,33 +1,57 @@
+// Package bootstrap - para inicializar la app
 package bootstrap
 
 import (
+	"context"
+	"strings"
+	"time"
+
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/oldfarmer96/vehicle-control-go/internal/controllers"
 	"github.com/oldfarmer96/vehicle-control-go/internal/routes"
 	"github.com/oldfarmer96/vehicle-control-go/internal/services"
 	"github.com/oldfarmer96/vehicle-control-go/internal/store"
+	"github.com/oldfarmer96/vehicle-control-go/pkg/env"
+	"github.com/oldfarmer96/vehicle-control-go/pkg/response"
 )
 
-// NewApp inicializa Fiber y enlaza todas las capas de la arquitectura
-func NewApp(db *pgxpool.Pool) *fiber.App {
-	// Inicializamos Fiber v3
+func NewApp(cfg env.Config, db *pgxpool.Pool) *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName: "Vehicle Control API v1.0",
 	})
 
-	// --- 1. Capa Store (Base de datos) ---
+	app.Use(logger.New())
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     strings.Split(cfg.CORSURLs, ","),
+		AllowCredentials: true,
+	}))
+
+	app.Get("/health", func(c fiber.Ctx) error {
+		ctx, cancel := context.WithTimeout(c.Context(), 3*time.Second)
+		defer cancel()
+
+		dbStatus := "connected"
+		if err := db.Ping(ctx); err != nil {
+			dbStatus = "disconnected"
+		}
+
+		return response.Success(c, fiber.Map{
+			"status":    "ok",
+			"database":  dbStatus,
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+		})
+	})
+
 	userStore := store.NewUserStore(db)
-
-	// --- 2. Capa Services (Lógica de Negocio) ---
 	userService := services.NewUserService(userStore)
-
-	// --- 3. Capa Controllers (HTTP y Validaciones) ---
-	authController := controllers.NewAuthController(userStore) // Auth suele usar el store de usuarios directamente o un AuthService
+	authController := controllers.NewAuthController(userStore)
 	userController := controllers.NewUserController(userService)
 
-	// --- 4. Registrar Rutas ---
 	routes.Setup(app, authController, userController)
 
 	return app

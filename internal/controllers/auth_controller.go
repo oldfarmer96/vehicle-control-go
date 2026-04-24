@@ -1,6 +1,9 @@
+// Package controllers - logica http
 package controllers
 
 import (
+	"errors"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -47,16 +50,12 @@ func (ac *AuthController) Login(c fiber.Ctx) error {
 		return response.Error(c, fiber.StatusInternalServerError, "Error generando token")
 	}
 
-	c.Cookie(&fiber.Cookie{
-		Name:     "access_token",
-		Value:    token,
-		Expires:  time.Now().Add(24 * time.Hour),
-		HTTPOnly: true,
-		Secure:   false,
-		SameSite: "Lax",
-	})
+	err = createCookie(c, token)
+	if err != nil {
+		return response.Error(c, fiber.StatusInternalServerError, err.Error())
+	}
 
-	return response.Success(c, fiber.Map{"message": "Login exitoso"})
+	return response.Success(c, user)
 }
 
 func (ac *AuthController) Profile(c fiber.Ctx) error {
@@ -72,13 +71,38 @@ func (ac *AuthController) Profile(c fiber.Ctx) error {
 }
 
 func (ac *AuthController) Logout(c fiber.Ctx) error {
+	cookieName := os.Getenv("COOKIE_NAME")
+	c.ClearCookie(cookieName)
+	return response.Success(c, fiber.Map{"message": "Sesión cerrada"})
+}
+
+// helpers
+func createCookie(c fiber.Ctx, token string) error {
+	env := os.Getenv("APP_ENV")
+	cookieName := os.Getenv("COOKIE_NAME")
+
+	if cookieName == "" {
+		return errors.New("falta el nombre de la cookie")
+	}
+
+	isProd := env == "production" || env == "prod"
+
 	c.Cookie(&fiber.Cookie{
-		Name:     "access_token",
-		Value:    "",
-		Expires:  time.Now().Add(-1 * time.Hour),
+		// Name:     "access_token",
+		Name:     cookieName,
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour),
 		HTTPOnly: true,
-		Secure:   false,
-		SameSite: "Lax",
+		Secure:   isProd,
+		SameSite: getSameSite(isProd),
 	})
-	return response.Success(c, fiber.Map{"message": "Logout exitoso"})
+
+	return nil
+}
+
+func getSameSite(isProduction bool) string {
+	if isProduction {
+		return "Strict"
+	}
+	return "Lax"
 }

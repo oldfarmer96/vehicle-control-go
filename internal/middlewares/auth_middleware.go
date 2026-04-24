@@ -1,3 +1,4 @@
+// Package middlewares  protector de autenticacion
 package middlewares
 
 import (
@@ -10,7 +11,8 @@ import (
 func Protected() fiber.Handler {
 	return func(c fiber.Ctx) error {
 		// 1. Extraer el token de la cookie
-		tokenString := c.Cookies("access_token")
+		cookieName := os.Getenv("COOKIE_NAME")
+		tokenString := c.Cookies(cookieName)
 		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "No autorizado, token ausente",
@@ -19,7 +21,7 @@ func Protected() fiber.Handler {
 
 		// 2. Parsear y validar el token
 		secret := os.Getenv("JWT_SECRET")
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 			return []byte(secret), nil
 		})
 
@@ -29,15 +31,12 @@ func Protected() fiber.Handler {
 			})
 		}
 
-		// 3. Extraer Claims y guardarlos en los "Locals" (Contexto de la petición)
 		claims := token.Claims.(jwt.MapClaims)
 
-		// Guardamos los datos para usarlos en el controlador
 		c.Locals("userID", claims["sub"])
 		c.Locals("userRole", claims["role"])
 		c.Locals("userEmail", claims["email"])
 
-		// 4. Continuar al siguiente handler (el controlador)
 		return c.Next()
 	}
 }

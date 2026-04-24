@@ -1,3 +1,4 @@
+// Package env - variables de entorno
 package env
 
 import (
@@ -13,10 +14,11 @@ type Config struct {
 	DatabaseURL string
 	JWTSecret   string
 	AppEnv      string
+	CORSURLs    string
+	CookieName  string
 }
 
 func getEnv(key string) (string, error) {
-
 	value := os.Getenv(key)
 
 	if value == "" {
@@ -27,7 +29,6 @@ func getEnv(key string) (string, error) {
 
 func LoadConfig() (Config, error) {
 	err := godotenv.Load()
-
 	if err != nil {
 		log.Println("Error al cargar el archivo .env")
 	}
@@ -47,9 +48,18 @@ func LoadConfig() (Config, error) {
 		return Config{}, err
 	}
 
+	cookieName, err := getEnv("COOKIE_NAME")
+	if err != nil {
+		return Config{}, err
+	}
+
+	corsURLs, _ := os.LookupEnv("CORS_URLS")
+
 	return Config{
 		Port:        port,
 		DatabaseURL: db,
 		AppEnv:      appEnv,
+		CORSURLs:    corsURLs,
+		CookieName:  cookieName,
 	}, nil
 }
