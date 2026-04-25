@@ -31,6 +31,12 @@ func NewApp(cfg env.Config, db *pgxpool.Pool) *fiber.App {
 		AllowCredentials: true,
 	}))
 
+	app.Get("/", func(c fiber.Ctx) error {
+		return response.Success(c, fiber.Map{
+			"app": "vehicle control go",
+		})
+	})
+
 	app.Get("/health", func(c fiber.Ctx) error {
 		ctx, cancel := context.WithTimeout(c.Context(), 3*time.Second)
 		defer cancel()
