@@ -86,4 +86,3 @@ func (c *UserController) Profile(ctx fiber.Ctx) error {
 
 	return response.Success(ctx, user)
 }
-
