@@ -1,0 +1,40 @@
+package controllers
+
+import (
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v3"
+	"github.com/oldfarmer96/vehicle-control-go/internal/models"
+	"github.com/oldfarmer96/vehicle-control-go/internal/services"
+	"github.com/oldfarmer96/vehicle-control-go/pkg/response"
+)
+
+var validate = validator.New()
+
+type VehicleController struct {
+	vehicleService *services.VehicleService
+}
+
+func NewVehiclecontroler(s *services.VehicleService) *VehicleController {
+	return &VehicleController{vehicleService: s}
+}
+
+func (c *VehicleController) Create(ctx fiber.Ctx) error {
+	var payload models.CreaateVehicleDTO
+
+	if err := ctx.Bind().JSON(&payload); err != nil {
+		return response.Error(ctx, fiber.StatusBadRequest, "Body inválido")
+	}
+
+	payload.Normalize()
+
+	if err := validate.Struct(&payload); err != nil {
+		return response.Error(ctx, fiber.StatusBadRequest, "Error de validación")
+	}
+
+	vehicle, err := c.vehicleService.CreateVehicle(ctx.Context(), payload)
+	if err != nil {
+		return response.Error(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
+	return response.Success(ctx, vehicle)
+}
