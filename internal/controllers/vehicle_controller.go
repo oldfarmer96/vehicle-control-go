@@ -53,3 +53,20 @@ func (c *VehicleController) GetAll(ctx fiber.Ctx) error {
 
 	return response.Success(ctx, result)
 }
+
+func (c *VehicleController) GetByPlaca(ctx fiber.Ctx) error {
+	placa := ctx.Params("placa")
+	if placa == "" {
+		return response.Error(ctx, fiber.StatusBadRequest, "placa es requerida")
+	}
+
+	vehicle, err := c.vehicleService.GetVehicleByPlaca(ctx.Context(), placa)
+	if err != nil {
+		if err.Error() == "vehiculo no encontrado" {
+			return response.Error(ctx, fiber.StatusNotFound, err.Error())
+		}
+		return response.Error(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
+	return response.Success(ctx, vehicle)
+}

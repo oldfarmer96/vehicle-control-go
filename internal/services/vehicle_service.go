@@ -49,3 +49,7 @@ func (s *VehicleService) GetAllVehicles(ctx context.Context, page, limit int, pl
 		TotalPages: totalPages,
 	}, nil
 }
+
+func (s *VehicleService) GetVehicleByPlaca(ctx context.Context, placa string) (*models.Vehicle, error) {
+	return s.vehicleStore.FindByPlacaWithOwner(ctx, placa)
+}

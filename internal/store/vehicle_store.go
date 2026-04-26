@@ -39,6 +39,45 @@ func (s *VehicleStore) FindByPlaca(ctx context.Context, placa string) (*models.V
 	return &v, nil
 }
 
+func (s *VehicleStore) FindByPlacaWithOwner(ctx context.Context, placa string) (*models.Vehicle, error) {
+	query := `
+	SELECT
+		v.id, v.placa, v.marca, v.modelo, v.color, v.vin, v.motor, v.created_at, v.updated_at,
+		p.id as owner_id, p.dni, p.nombre_completo, p.rol, p.tiene_acceso_permitido
+	FROM vehiculos v
+	LEFT JOIN vehiculos_personas vp ON v.id = vp.vehiculo_id
+	LEFT JOIN personas p ON vp.persona_id = p.id
+	WHERE v.placa = $1
+	`
+
+	var v models.Vehicle
+	var ownerID, ownerDNI, ownerNombreCompleto, ownerRol *string
+	var ownerTieneAcceso *bool
+
+	err := s.db.QueryRow(ctx, query, placa).Scan(
+		&v.ID, &v.Placa, &v.Marca, &v.Modelo, &v.Color, &v.Vin, &v.Motor, &v.CreatedAt, &v.UpdatedAt,
+		&ownerID, &ownerDNI, &ownerNombreCompleto, &ownerRol, &ownerTieneAcceso,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New("vehiculo no encontrado")
+		}
+		return nil, err
+	}
+
+	if ownerID != nil {
+		v.Duenio = &models.VehicleOwner{
+			ID:             *ownerID,
+			DNI:            *ownerDNI,
+			NombreCompleto: *ownerNombreCompleto,
+			Rol:            *ownerRol,
+			TieneAcceso:    *ownerTieneAcceso,
+		}
+	}
+
+	return &v, nil
+}
+
 func (s *VehicleStore) Create(ctx context.Context, payload models.CreaateVehicleDTO) (*models.Vehicle, error) {
 	query := `
 	INSERT INTO vehiculos (placa, marca, modelo, color, vin, motor)

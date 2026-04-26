@@ -10,5 +10,6 @@ func SetupVehicleRoutes(router fiber.Router, vehicleCtrl *controllers.VehicleCon
 	vehicles := router.Group("/vehicle", middlewares.Auth())
 
 	vehicles.Get("/", vehicleCtrl.GetAll)
+	vehicles.Get("/:placa/placa", vehicleCtrl.GetByPlaca)
 	vehicles.Post("/", vehicleCtrl.Create)
 }
