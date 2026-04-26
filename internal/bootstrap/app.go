@@ -53,12 +53,23 @@ func NewApp(cfg env.Config, db *pgxpool.Pool) *fiber.App {
 		})
 	})
 
+	// auth and user modules
 	userStore := store.NewUserStore(db)
 	userService := services.NewUserService(userStore)
 	authController := controllers.NewAuthController(userStore)
 	userController := controllers.NewUserController(userService)
 
-	routes.Setup(app, authController, userController)
+	// persona module
+	personaStore := store.NewPersonaStore(db)
+	personaService := services.NewPersonaService(personaStore)
+	personaController := controllers.NewPersonaController(personaService)
+
+	// vehicle module
+	vehicleStore := store.NewVehicleStore(db)
+	vehicleService := services.NewVehicleService(vehicleStore, personaStore)
+	vehicleController := controllers.NewVehiclecontroler(vehicleService)
+
+	routes.Setup(app, authController, userController, vehicleController, personaController)
 
 	return app
 }
