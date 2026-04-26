@@ -66,3 +66,27 @@ func (c *PersonaController) ToggleAccessStatus(ctx fiber.Ctx) error {
 
 	return response.Success(ctx, persona)
 }
+
+func (c *PersonaController) Update(ctx fiber.Ctx) error {
+	id := ctx.Params("id")
+	if id == "" {
+		return response.Error(ctx, fiber.StatusBadRequest, "id es requerido")
+	}
+
+	var payload models.UpdatePersonaDTO
+	if err := ctx.Bind().JSON(&payload); err != nil {
+		return response.Error(ctx, fiber.StatusBadRequest, "Body inválido")
+	}
+
+	payload.Normalize()
+
+	persona, err := c.personaService.UpdatePersona(ctx.Context(), id, payload)
+	if err != nil {
+		if err.Error() == "persona no encontrada" {
+			return response.Error(ctx, fiber.StatusNotFound, err.Error())
+		}
+		return response.Error(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
+	return response.Success(ctx, persona)
+}

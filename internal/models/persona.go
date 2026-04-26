@@ -39,6 +39,21 @@ func (d *CreatePersonaDTO) Normalize() {
 	}
 }
 
+type UpdatePersonaDTO struct {
+	NombreCompleto       *string `json:"nombreCompleto,omitempty"`
+	Rol                  *string `json:"rol,omitempty"`
+	TieneAccesoPermitido *bool   `json:"tieneAccesoPermitido,omitempty"`
+}
+
+func (d *UpdatePersonaDTO) Normalize() {
+	if d.NombreCompleto != nil && strings.TrimSpace(*d.NombreCompleto) == "" {
+		d.NombreCompleto = nil
+	}
+	if d.Rol != nil && strings.TrimSpace(*d.Rol) == "" {
+		d.Rol = nil
+	}
+}
+
 type ListPersonasQuery struct {
 	Page  int    `query:"page"`
 	Limit int    `query:"limit"`

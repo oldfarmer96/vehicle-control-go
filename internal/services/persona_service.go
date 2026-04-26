@@ -53,3 +53,7 @@ func (s *PersonaService) GetAllPersonas(ctx context.Context, page, limit int, se
 func (s *PersonaService) ToggleAccessStatus(ctx context.Context, id string) (*models.Persona, error) {
 	return s.personaStore.ToggleAccess(ctx, id)
 }
+
+func (s *PersonaService) UpdatePersona(ctx context.Context, id string, payload models.UpdatePersonaDTO) (*models.Persona, error) {
+	return s.personaStore.Update(ctx, id, payload)
+}
