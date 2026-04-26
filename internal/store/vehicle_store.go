@@ -78,6 +78,86 @@ func (s *VehicleStore) FindByPlacaWithOwner(ctx context.Context, placa string) (
 	return &v, nil
 }
 
+func (s *VehicleStore) AssignOwner(ctx context.Context, vehiculoID, personaID string) error {
+	query := `
+		INSERT INTO vehiculos_personas (vehiculo_id, persona_id)
+		VALUES ($1, $2)
+		ON CONFLICT (vehiculo_id, persona_id) DO NOTHING
+	`
+
+	result, err := s.db.Exec(ctx, query, vehiculoID, personaID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return errors.New("esta persona ya esta asignada a este vehiculo")
+	}
+
+	return nil
+}
+
+func (s *VehicleStore) FindByID(ctx context.Context, id string) (*models.Vehicle, error) {
+	query := `
+		SELECT id, placa, marca, modelo, color, vin, motor, created_at, updated_at
+		FROM vehiculos
+		WHERE id = $1
+	`
+
+	var v models.Vehicle
+	err := s.db.QueryRow(ctx, query, id).Scan(
+		&v.ID, &v.Placa, &v.Marca, &v.Modelo, &v.Color, &v.Vin, &v.Motor, &v.CreatedAt, &v.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New("vehiculo no encontrado")
+		}
+		return nil, err
+	}
+
+	return &v, nil
+}
+
+func (s *VehicleStore) GetVehicleWithOwner(ctx context.Context, id string) (*models.Vehicle, error) {
+	query := `
+	SELECT
+		v.id, v.placa, v.marca, v.modelo, v.color, v.vin, v.motor, v.created_at, v.updated_at,
+		p.id as owner_id, p.dni, p.nombre_completo, p.rol, p.tiene_acceso_permitido
+	FROM vehiculos v
+	LEFT JOIN vehiculos_personas vp ON v.id = vp.vehiculo_id
+	LEFT JOIN personas p ON vp.persona_id = p.id
+	WHERE v.id = $1
+	`
+
+	var v models.Vehicle
+	var ownerID, ownerDNI, ownerNombreCompleto, ownerRol *string
+	var ownerTieneAcceso *bool
+
+	err := s.db.QueryRow(ctx, query, id).Scan(
+		&v.ID, &v.Placa, &v.Marca, &v.Modelo, &v.Color, &v.Vin, &v.Motor, &v.CreatedAt, &v.UpdatedAt,
+		&ownerID, &ownerDNI, &ownerNombreCompleto, &ownerRol, &ownerTieneAcceso,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New("vehiculo no encontrado")
+		}
+		return nil, err
+	}
+
+	if ownerID != nil {
+		v.Duenio = &models.VehicleOwner{
+			ID:             *ownerID,
+			DNI:            *ownerDNI,
+			NombreCompleto: *ownerNombreCompleto,
+			Rol:            *ownerRol,
+			TieneAcceso:    *ownerTieneAcceso,
+		}
+	}
+
+	return &v, nil
+}
+
 func (s *VehicleStore) Create(ctx context.Context, payload models.CreaateVehicleDTO) (*models.Vehicle, error) {
 	query := `
 	INSERT INTO vehiculos (placa, marca, modelo, color, vin, motor)

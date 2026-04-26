@@ -40,6 +40,27 @@ func (s *PersonaStore) FindByDNI(ctx context.Context, dni string) (*models.Perso
 	return &p, nil
 }
 
+func (s *PersonaStore) FindByID(ctx context.Context, id string) (*models.Persona, error) {
+	query := `
+		SELECT id, dni, nombre_completo, rol, tiene_acceso_permitido, created_at, updated_at
+		FROM personas
+		WHERE id = $1
+	`
+
+	var p models.Persona
+	err := s.db.QueryRow(ctx, query, id).Scan(
+		&p.ID, &p.DNI, &p.NombreCompleto, &p.Rol, &p.TieneAccesoPermitido, &p.CreatedAt, &p.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New("persona no encontrada")
+		}
+		return nil, err
+	}
+
+	return &p, nil
+}
+
 func (s *PersonaStore) Create(ctx context.Context, payload models.CreatePersonaDTO) (*models.Persona, error) {
 	query := `
 		INSERT INTO personas (dni, nombre_completo, rol, tiene_acceso_permitido)

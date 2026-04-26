@@ -37,7 +37,17 @@ type VehicleListResponse struct {
 	Total       int       `json:"total"`
 	Page        int       `json:"page"`
 	Limit       int       `json:"limit"`
-	TotalPages  int       `json:"total_pages"`
+	TotalPages  int       `json:"totalPages"`
+}
+
+type AssignOwnerDTO struct {
+	PersonaID string `json:"personaId" validate:"required,uuid"`
+}
+
+type AssignOwnerResponse struct {
+	Mensaje string   `json:"mensaje"`
+	Vehiculo Vehicle `json:"vehiculo"`
+	Persona Persona  `json:"persona"`
 }
 
 type CreaateVehicleDTO struct {

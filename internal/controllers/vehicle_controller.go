@@ -70,3 +70,38 @@ func (c *VehicleController) GetByPlaca(ctx fiber.Ctx) error {
 
 	return response.Success(ctx, vehicle)
 }
+
+func (c *VehicleController) AssignOwner(ctx fiber.Ctx) error {
+	vehiculoID := ctx.Params("id")
+	if vehiculoID == "" {
+		return response.Error(ctx, fiber.StatusBadRequest, "id del vehiculo es requerido")
+	}
+
+	var payload models.AssignOwnerDTO
+	if err := ctx.Bind().JSON(&payload); err != nil {
+		return response.Error(ctx, fiber.StatusBadRequest, "Body inválido")
+	}
+
+	if payload.PersonaID == "" {
+		return response.Error(ctx, fiber.StatusBadRequest, "personaId es requerido")
+	}
+
+	vehicle, err := c.vehicleService.AssignOwner(ctx.Context(), vehiculoID, payload.PersonaID)
+	if err != nil {
+		if err.Error() == "vehiculo no encontrado" {
+			return response.Error(ctx, fiber.StatusNotFound, err.Error())
+		}
+		if err.Error() == "persona no encontrada" {
+			return response.Error(ctx, fiber.StatusNotFound, err.Error())
+		}
+		if err.Error() == "esta persona ya esta asignada a este vehiculo" {
+			return response.Error(ctx, fiber.StatusConflict, err.Error())
+		}
+		return response.Error(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
+	return response.Success(ctx, fiber.Map{
+		"mensaje": "propietario asignado exitosamente",
+		"vehiculo": vehicle,
+	})
+}

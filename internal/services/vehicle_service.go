@@ -11,10 +11,11 @@ import (
 
 type VehicleService struct {
 	vehicleStore *store.VehicleStore
+	personaStore *store.PersonaStore
 }
 
-func NewVehicleService(store *store.VehicleStore) *VehicleService {
-	return &VehicleService{vehicleStore: store}
+func NewVehicleService(store *store.VehicleStore, personaStore *store.PersonaStore) *VehicleService {
+	return &VehicleService{vehicleStore: store, personaStore: personaStore}
 }
 
 func (s *VehicleService) CreateVehicle(ctx context.Context, payload models.CreaateVehicleDTO) (*models.Vehicle, error) {
@@ -52,4 +53,23 @@ func (s *VehicleService) GetAllVehicles(ctx context.Context, page, limit int, pl
 
 func (s *VehicleService) GetVehicleByPlaca(ctx context.Context, placa string) (*models.Vehicle, error) {
 	return s.vehicleStore.FindByPlacaWithOwner(ctx, placa)
+}
+
+func (s *VehicleService) AssignOwner(ctx context.Context, vehiculoID, personaID string) (*models.Vehicle, error) {
+	_, err := s.vehicleStore.FindByID(ctx, vehiculoID)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.personaStore.FindByID(ctx, personaID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.vehicleStore.AssignOwner(ctx, vehiculoID, personaID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.vehicleStore.GetVehicleWithOwner(ctx, vehiculoID)
 }

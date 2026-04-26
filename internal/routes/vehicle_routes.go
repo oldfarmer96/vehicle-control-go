@@ -12,4 +12,5 @@ func SetupVehicleRoutes(router fiber.Router, vehicleCtrl *controllers.VehicleCon
 	vehicles.Get("/", vehicleCtrl.GetAll)
 	vehicles.Get("/:placa/placa", vehicleCtrl.GetByPlaca)
 	vehicles.Post("/", vehicleCtrl.Create)
+	vehicles.Post("/:id/assign-owner", vehicleCtrl.AssignOwner)
 }
