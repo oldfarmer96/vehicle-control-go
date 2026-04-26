@@ -9,5 +9,6 @@ import (
 func SetupVehicleRoutes(router fiber.Router, vehicleCtrl *controllers.VehicleController) {
 	vehicles := router.Group("/vehicle", middlewares.Auth())
 
+	vehicles.Get("/", vehicleCtrl.GetAll)
 	vehicles.Post("/", vehicleCtrl.Create)
 }

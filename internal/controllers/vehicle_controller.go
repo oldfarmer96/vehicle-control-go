@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v3"
 	"github.com/oldfarmer96/vehicle-control-go/internal/models"
@@ -37,4 +39,17 @@ func (c *VehicleController) Create(ctx fiber.Ctx) error {
 	}
 
 	return response.Success(ctx, vehicle)
+}
+
+func (c *VehicleController) GetAll(ctx fiber.Ctx) error {
+	page, _ := strconv.Atoi(ctx.Query("page", "1"))
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	placa := ctx.Query("placa", "")
+
+	result, err := c.vehicleService.GetAllVehicles(ctx.Context(), page, limit, placa)
+	if err != nil {
+		return response.Error(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
+	return response.Success(ctx, result)
 }

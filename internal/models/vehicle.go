@@ -5,16 +5,39 @@ import (
 	"time"
 )
 
+type VehicleOwner struct {
+	ID              string    `json:"id"`
+	DNI             string    `json:"dni"`
+	NombreCompleto  string    `json:"nombre_completo"`
+	Rol             string    `json:"rol"`
+	TieneAcceso     bool      `json:"tiene_acceso_permitido"`
+}
+
 type Vehicle struct {
-	ID        string    `json:"id"`
-	Placa     string    `json:"placa"`
-	Marca     *string   `json:"marca"`
-	Modelo    *string   `json:"modelo"`
-	Color     *string   `json:"color"`
-	Vin       *string   `json:"vin"`
-	Motor     *string   `json:"motor"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        string         `json:"id"`
+	Placa     string         `json:"placa"`
+	Marca     *string        `json:"marca"`
+	Modelo    *string        `json:"modelo"`
+	Color     *string        `json:"color"`
+	Vin       *string        `json:"vin"`
+	Motor     *string        `json:"motor"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	Duenio    *VehicleOwner  `json:"duenio,omitempty"`
+}
+
+type ListVehiclesQuery struct {
+	Page  int    `query:"page"`
+	Limit int    `query:"limit"`
+	Placa string `query:"placa"`
+}
+
+type VehicleListResponse struct {
+	Vehiculos   []Vehicle `json:"vehiculos"`
+	Total       int       `json:"total"`
+	Page        int       `json:"page"`
+	Limit       int       `json:"limit"`
+	TotalPages  int       `json:"total_pages"`
 }
 
 type CreaateVehicleDTO struct {

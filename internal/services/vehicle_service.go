@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"math"
 
 	"github.com/oldfarmer96/vehicle-control-go/internal/models"
 	"github.com/oldfarmer96/vehicle-control-go/internal/store"
@@ -23,4 +24,28 @@ func (s *VehicleService) CreateVehicle(ctx context.Context, payload models.Creaa
 	}
 
 	return s.vehicleStore.Create(ctx, payload)
+}
+
+func (s *VehicleService) GetAllVehicles(ctx context.Context, page, limit int, placa string) (*models.VehicleListResponse, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	vehicles, total, err := s.vehicleStore.GetAll(ctx, page, limit, placa)
+	if err != nil {
+		return nil, err
+	}
+
+	totalPages := int(math.Ceil(float64(total) / float64(limit)))
+
+	return &models.VehicleListResponse{
+		Vehiculos:  vehicles,
+		Total:      total,
+		Page:       page,
+		Limit:      limit,
+		TotalPages: totalPages,
+	}, nil
 }
