@@ -5,21 +5,28 @@ import (
 	"time"
 )
 
+type PersonaVehicle struct {
+	ID    string  `json:"id"`
+	Placa string  `json:"placa"`
+	Marca *string `json:"marca"`
+}
+
 type Persona struct {
-	ID                   string    `json:"id"`
-	DNI                  string    `json:"dni"`
-	NombreCompleto       string    `json:"nombre_completo"`
-	Rol                  string    `json:"rol"`
-	TieneAccesoPermitido bool      `json:"tiene_acceso_permitido"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	ID                   string           `json:"id"`
+	DNI                  string           `json:"dni"`
+	NombreCompleto       string           `json:"nombreCompleto"`
+	Rol                  string           `json:"rol"`
+	TieneAccesoPermitido bool             `json:"tieneAccesoPermitido"`
+	CreatedAt            time.Time        `json:"createdAt"`
+	UpdatedAt            time.Time        `json:"updatedAt"`
+	Vehiculos            []PersonaVehicle `json:"vehiculos,omitempty"`
 }
 
 type CreatePersonaDTO struct {
 	DNI                  string `json:"dni" validate:"required,len=8"`
-	NombreCompleto       string `json:"nombre_completo" validate:"required,min=5,max=150"`
+	NombreCompleto       string `json:"nombreCompleto" validate:"required,min=5,max=150"`
 	Rol                  string `json:"rol" validate:"required,oneof=DOCENTE ALUMNO ADMINISTRATIVO VISITANTE"`
-	TieneAccesoPermitido *bool  `json:"tiene_acceso_permitido" validate:"required"`
+	TieneAccesoPermitido *bool  `json:"tieneAccesoPermitido" validate:"required"`
 }
 
 func (d *CreatePersonaDTO) Normalize() {
@@ -30,4 +37,18 @@ func (d *CreatePersonaDTO) Normalize() {
 		t := true
 		d.TieneAccesoPermitido = &t
 	}
+}
+
+type ListPersonasQuery struct {
+	Page  int    `query:"page"`
+	Limit int    `query:"limit"`
+	Search string `query:"search"`
+}
+
+type PersonaListResponse struct {
+	Personas   []Persona `json:"personas"`
+	Total      int       `json:"total"`
+	Page       int       `json:"page"`
+	Limit      int       `json:"limit"`
+	TotalPages int       `json:"totalPages"`
 }

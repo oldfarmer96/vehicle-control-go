@@ -9,5 +9,6 @@ import (
 func SetupPersonaRoutes(router fiber.Router, personaCtrl *controllers.PersonaController) {
 	personas := router.Group("/persona", middlewares.Auth())
 
+	personas.Get("/", personaCtrl.GetAll)
 	personas.Post("/", personaCtrl.Create)
 }

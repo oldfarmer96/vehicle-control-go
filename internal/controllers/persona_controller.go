@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/oldfarmer96/vehicle-control-go/internal/models"
 	"github.com/oldfarmer96/vehicle-control-go/internal/services"
@@ -33,4 +35,17 @@ func (c *PersonaController) Create(ctx fiber.Ctx) error {
 	}
 
 	return response.Success(ctx, persona)
+}
+
+func (c *PersonaController) GetAll(ctx fiber.Ctx) error {
+	page, _ := strconv.Atoi(ctx.Query("page", "1"))
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	search := ctx.Query("search", "")
+
+	result, err := c.personaService.GetAllPersonas(ctx.Context(), page, limit, search)
+	if err != nil {
+		return response.Error(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
+	return response.Success(ctx, result)
 }
