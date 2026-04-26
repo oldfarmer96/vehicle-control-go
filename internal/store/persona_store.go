@@ -59,6 +59,26 @@ func (s *PersonaStore) Create(ctx context.Context, payload models.CreatePersonaD
 	return &p, nil
 }
 
+func (s *PersonaStore) ToggleAccess(ctx context.Context, id string) (*models.Persona, error) {
+	query := `
+		UPDATE personas SET tiene_acceso_permitido = NOT tiene_acceso_permitido WHERE id = $1
+		RETURNING id, dni, nombre_completo, rol, tiene_acceso_permitido, created_at, updated_at
+	`
+
+	var p models.Persona
+	err := s.db.QueryRow(ctx, query, id).Scan(
+		&p.ID, &p.DNI, &p.NombreCompleto, &p.Rol, &p.TieneAccesoPermitido, &p.CreatedAt, &p.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errors.New("persona no encontrada")
+		}
+		return nil, err
+	}
+
+	return &p, nil
+}
+
 func (s *PersonaStore) GetAll(ctx context.Context, page, limit int, search string) ([]models.Persona, int, error) {
 	offset := (page - 1) * limit
 

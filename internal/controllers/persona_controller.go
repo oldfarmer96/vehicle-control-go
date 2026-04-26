@@ -49,3 +49,20 @@ func (c *PersonaController) GetAll(ctx fiber.Ctx) error {
 
 	return response.Success(ctx, result)
 }
+
+func (c *PersonaController) ToggleAccessStatus(ctx fiber.Ctx) error {
+	id := ctx.Params("id")
+	if id == "" {
+		return response.Error(ctx, fiber.StatusBadRequest, "id es requerido")
+	}
+
+	persona, err := c.personaService.ToggleAccessStatus(ctx.Context(), id)
+	if err != nil {
+		if err.Error() == "persona no encontrada" {
+			return response.Error(ctx, fiber.StatusNotFound, err.Error())
+		}
+		return response.Error(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
+	return response.Success(ctx, persona)
+}

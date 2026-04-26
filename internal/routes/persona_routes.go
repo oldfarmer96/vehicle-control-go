@@ -11,4 +11,5 @@ func SetupPersonaRoutes(router fiber.Router, personaCtrl *controllers.PersonaCon
 
 	personas.Get("/", personaCtrl.GetAll)
 	personas.Post("/", personaCtrl.Create)
+	personas.Patch("/:id/access-status", personaCtrl.ToggleAccessStatus)
 }
