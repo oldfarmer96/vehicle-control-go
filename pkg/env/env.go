@@ -10,12 +10,15 @@ import (
 )
 
 type Config struct {
-	Port        string
-	DatabaseURL string
-	JWTSecret   string
-	AppEnv      string
-	CORSURLs    string
-	CookieName  string
+	Port           string
+	DatabaseURL    string
+	JWTSecret      string
+	AppEnv         string
+	CORSURLs       string
+	CookieName     string
+	APIKeyWebhook  string
+	APIURL         string
+	APIToken       string
 }
 
 func getEnv(key string) (string, error) {
@@ -54,12 +57,18 @@ func LoadConfig() (Config, error) {
 	}
 
 	corsURLs, _ := os.LookupEnv("CORS_URLS")
+	apiKeyWebhook, _ := os.LookupEnv("API_KEY_WEBHOOK")
+	apiURL, _ := os.LookupEnv("API_URL")
+	apiToken, _ := os.LookupEnv("API_TOKEN")
 
 	return Config{
-		Port:        port,
-		DatabaseURL: db,
-		AppEnv:      appEnv,
-		CORSURLs:    corsURLs,
-		CookieName:  cookieName,
+		Port:           port,
+		DatabaseURL:    db,
+		AppEnv:         appEnv,
+		CORSURLs:       corsURLs,
+		CookieName:     cookieName,
+		APIKeyWebhook:  apiKeyWebhook,
+		APIURL:         apiURL,
+		APIToken:       apiToken,
 	}, nil
 }
