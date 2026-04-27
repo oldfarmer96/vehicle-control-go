@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"math"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/oldfarmer96/vehicle-control-go/internal/models"
@@ -84,4 +85,28 @@ func (s *AccessEventService) createVehicleFromExternalOrUnknown(ctx context.Cont
 	}
 
 	return vehicle, "unknown", nil
+}
+
+func (s *AccessEventService) GetAllEvents(ctx context.Context, page, limit int, placa string) (*models.AccessEventListResponse, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	events, total, err := s.store.GetAll(ctx, page, limit, placa)
+	if err != nil {
+		return nil, err
+	}
+
+	totalPages := int(math.Ceil(float64(total) / float64(limit)))
+
+	return &models.AccessEventListResponse{
+		Eventos:    events,
+		Total:      total,
+		Page:       page,
+		Limit:      limit,
+		TotalPages: totalPages,
+	}, nil
 }
