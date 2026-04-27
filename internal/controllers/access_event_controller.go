@@ -39,3 +39,21 @@ func (c *AccessEventController) ReceiveEvent(ctx fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(resp)
 }
 
+func (c *AccessEventController) ListEvents(ctx fiber.Ctx) error {
+	var query models.ListAccessEventsQuery
+	if err := ctx.Bind().Query(&query); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Query params inválidos",
+		})
+	}
+
+	resp, err := c.service.GetAllEvents(ctx, query.Page, query.Limit, query.Placa)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(resp)
+}
+

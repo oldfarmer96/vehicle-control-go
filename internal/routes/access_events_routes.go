@@ -13,4 +13,9 @@ func SetupAccessEventsRoutes(api fiber.Router, ctrl *controllers.AccessEventCont
 		middlewares.ApiKeyMiddleware(apiKey),
 		ctrl.ReceiveEvent,
 	)
+
+	accessControl.Get("/access-events",
+		middlewares.ApiKeyMiddleware(apiKey),
+		ctrl.ListEvents,
+	)
 }
