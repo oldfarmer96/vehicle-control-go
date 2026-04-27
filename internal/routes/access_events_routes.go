@@ -9,13 +9,11 @@ import (
 func SetupAccessEventsRoutes(api fiber.Router, ctrl *controllers.AccessEventController, apiKey string) {
 	accessControl := api.Group("/access-control")
 
-	accessControl.Post("/access-events",
-		middlewares.ApiKeyMiddleware(apiKey),
-		ctrl.ReceiveEvent,
-	)
+	accessControl.Post("/access-events", ctrl.ReceiveEvent)
 
 	accessControl.Get("/access-events",
 		middlewares.ApiKeyMiddleware(apiKey),
 		ctrl.ListEvents,
 	)
 }
+
