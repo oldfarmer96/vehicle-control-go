@@ -15,7 +15,9 @@ import (
 	"github.com/oldfarmer96/vehicle-control-go/internal/routes"
 	"github.com/oldfarmer96/vehicle-control-go/internal/services"
 	"github.com/oldfarmer96/vehicle-control-go/internal/store"
+	"github.com/oldfarmer96/vehicle-control-go/internal/websockets"
 	"github.com/oldfarmer96/vehicle-control-go/pkg/env"
+	"github.com/oldfarmer96/vehicle-control-go/pkg/external"
 	"github.com/oldfarmer96/vehicle-control-go/pkg/response"
 )
 
@@ -69,7 +71,17 @@ func NewApp(cfg env.Config, db *pgxpool.Pool) *fiber.App {
 	vehicleService := services.NewVehicleService(vehicleStore, personaStore)
 	vehicleController := controllers.NewVehiclecontroler(vehicleService)
 
-	routes.Setup(app, authController, userController, vehicleController, personaController)
+	// WebSocket
+	hub := websockets.NewHub()
+	wsCtrl := controllers.NewWSController(hub)
+
+	accessEventStore := store.NewAccessEventStore(db)
+	placaClient := external.NewPlacaClient(cfg.APIURL, cfg.APIToken)
+	accessEventService := services.NewAccessEventService(accessEventStore, placaClient)
+	accessEventCtrl := controllers.NewAccessEventController(hub, accessEventService)
+
+	routes.SetupWSRoutes(app, wsCtrl)
+	routes.Setup(app, authController, userController, vehicleController, personaController, accessEventCtrl, cfg.APIKeyWebhook)
 
 	return app
 }
